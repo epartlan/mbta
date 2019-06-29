@@ -1,0 +1,38 @@
+<center><h1>Riding the Red Line</h1><br/>
+	by Erin Partlan and Dhaval Parmar <br/><br/>
+
+Statistics for MBTA Red Line performance. <br/>
+Were yesterday's Red Line trains actually slower than usual?<br/>
+Compare yesterday's performance to historical averages. <br/> 
+Select a time period to view. <br/>
+(Please be patient when loading stats for one year!)<br/><br/><br/>
+
+<form method="POST" class="post-form" action="">
+{% csrf_token %}
+<input type="radio" name="timeframe" value="last_day">Yesterday
+<input type="radio" name="timeframe" value="last_week">Last Week
+<input type="radio" name="timeframe" value="last_month">Last Month
+<input type="radio" name="timeframe" value="last_year">Last Year
+<br /><br />
+<button type="submit" class="save btn btn-default">Submit</button>
+</form>
+
+
+<br/>For the period {{ from_datetime }} to {{ to_datetime }} <br/><br/>
+
+{% if totaltrips != '' %}
+<b>Total trips (both directions): </b>{{ totaltrips }}<br />
+{% endif %}
+{% if time_bt != '' %}
+<b>Time between trains at rush hour (M-F 7-10am 4-7pm): </b>{{ time_bt }}
+{% endif %}
+<br />
+{{ graphdata }}
+<br />
+
+{% if graph != '' %}
+{% for elem in graph %}
+   {{elem|safe}}
+{% endfor %}
+{% endif %}
+</center>
