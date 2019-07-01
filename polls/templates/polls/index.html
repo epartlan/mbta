@@ -20,31 +20,32 @@ Select a time period to view. <br/>
 
 <br/>For the period {{ from_datetime }} to {{ to_datetime }} <br/><br/>
 
-Trains from Alewife:
+<b>Trains from Alewife:</b>
+<br/>
 {% if totaltrips != '' %}
-<b>Total trips: </b>{{ totaltrips[0] }}<br />
+Total trips: {{ totaltripsA }}<br />
 {% endif %}
-{% if time_bt != '' %}
 {% if totalrush != '' %}
-<b>Total trips at rush hour (M-F 7-10am 4-7pm): </b>{{ totalrush[0] }}<br />
+Total trips at rush hour (M-F 7-10am 4-7pm): {{ totalrushA }}<br />
 {% endif %}
 {% if time_bt != '' %}
-<b>Time between trains at rush hour: </b>{{ time_bt[0] }}
+Time between trains at rush hour: {{ time_btA }}
 {% endif %}
 <br/>
 <br/>
-Trains to Alewife:
+<b>Trains to Alewife:</b>
+<br/>
 {% if totaltrips != '' %}
-<b>Total trips: </b>{{ totaltrips[1] }}<br />
+Total trips: {{ totaltripsB }}<br />
 {% endif %}
-{% if time_bt != '' %}
 {% if totalrush != '' %}
-<b>Total trips at rush hour (M-F 7-10am 4-7pm): </b>{{ totalrush[1] }}<br />
+Total trips at rush hour (M-F 7-10am 4-7pm): {{ totalrushB }}<br />
 {% endif %}
 {% if time_bt != '' %}
-<b>Time between trains at rush hour: </b>{{ time_bt[1] }}
+Time between trains at rush hour: {{ time_btB }}
 {% endif %}
-
+<br/>
+<br/>
 
 {% if graph != '' %}
 {% for elem in graph %}
