@@ -6,6 +6,7 @@ from django.shortcuts import render
 # Create your views here.
 import requests
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta 
 from time import strptime, mktime, localtime
 from django.http import HttpResponse
@@ -33,7 +34,7 @@ def index(request):
 		elif timeframe == 'last_month': outputs = last_month(times)
 		elif timeframe == 'last_year': outputs = last_year(times)
 	else:
-		outputs = last_day()
+		outputs = last_day(get_times('last_day'))
 
 
 	# fig = plt.figure()
@@ -42,15 +43,16 @@ def index(request):
 
 	template = loader.get_template('polls/index.html')
 	context = {
-		'totaltrips': outputs[1],
+		'totaltripsA': outputs[1][0],
+		'totaltripsB': outputs[1][1],
 		'to_datetime': to_datetime,
-		'totalrush': outputs[2],
-		'time_bt': outputs[3],
+		'totalrushA': outputs[2][0],
+		'totalrushB': outputs[2][1],
+		'time_btA': outputs[3][0],
+		'time_btB': outputs[3][1],
 		'from_datetime': outputs[4],
 		'graph': [outputs[0]],
 	}
-
-	g, count, rush_count, time_bt_avg, from_datetime]
 	
 	return HttpResponse(template.render(context, request))
 
@@ -125,7 +127,14 @@ def last_day(times):
 
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
-	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	time_bt_avg = []
+	
+	for i in range(len(time_bt)):
+		if not time_bt[i]:
+			time_bt_avg.append('No weekdays in timeframe')
+		else:
+			avgtime = np.average(time_bt[i])			
+			time_bt_avg.append(str(int(avgtime/60))+' minutes and '+str(int(avgtime%60))+' seconds')
 
 	# manipulate departure times to create plot of trains per time (one hour bin size)
 	bins_oneday = [int(from_datetime_epoch)]
@@ -153,7 +162,7 @@ def last_day(times):
 
 
 
-def last_week():
+def last_week(times):
 
 	# get departure times for trains in the last day
 	to_datetime = times[3]
@@ -189,7 +198,15 @@ def last_week():
 
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
-	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	time_bt_avg = []
+	
+	for i in range(len(time_bt)):
+		if not time_bt[i]:
+			time_bt_avg.append('No weekdays in timeframe')
+		else:
+			avgtime = np.average(time_bt[i])			
+			time_bt_avg.append(str(int(avgtime/60))+' minutes and '+str(int(avgtime%60))+' seconds')
+
 	
 	
 	# manipulate departure times to create plot of trains per time (one hour bin size)
@@ -216,7 +233,7 @@ def last_week():
 	return outputs
 
 
-def last_month():
+def last_month(times):
 
 	# get departure times for trains in the last day
 	to_datetime = times[3]
@@ -231,32 +248,42 @@ def last_month():
 	
 	dep_dt_list = [[],[]]
 
-	for i in range(2):
-	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-	    r = requests.get(url)
-	    R = r.json()
-	    for x in range(len(R['travel_times'])):
-		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
-
-	dep_dt_list.sort()
-	time_bt = [[],[]]
-
 	for j in range(5):
 		for i in range(2):
-		    for k in range(len(dep_dt_list[i])-1):
-			timestruct = localtime(float(dep_dt_list[i][k]))
-			if timestruct[6] < 5 and (
-			    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-			    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-			    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+		    r = requests.get(url)
+		    R = r.json()
+		    for x in range(len(R['travel_times'])):
+			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
+	dep_dt_list.sort()
+	time_bt = [[],[]]
+	time_bt_avg = []
+
+
+	for i in range(2):
+	    for k in range(len(dep_dt_list[i])-1):
+		timestruct = localtime(float(dep_dt_list[i][k]))
+		if timestruct[6] < 5 and (
+		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+
+
 	from_datetime = from_datetime + timedelta(days=6)
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
-	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	
+	for i in range(len(time_bt)):
+		if not time_bt[i]:
+			time_bt_avg.append('No weekdays in timeframe')
+		else:
+			avgtime = np.average(time_bt[i])			
+			time_bt_avg.append(str(int(avgtime/60))+' minutes and '+str(int(avgtime%60))+' seconds')
+
 	
 
 	# manipulate departure times to create plot of trains per time (one day bin size)
@@ -283,7 +310,7 @@ def last_month():
 	return outputs
 
 
-def last_year():
+def last_year(times):
 	# get departure times for trains in the last day
 	to_datetime = times[3]
 	from_datetime = times[2]
@@ -297,33 +324,43 @@ def last_year():
 	
 	dep_dt_list = [[],[]]
 
-	for i in range(2):
-	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-	    r = requests.get(url)
-	    R = r.json()
-	    for x in range(len(R['travel_times'])):
-		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
-
-	dep_dt_list.sort()
-	time_bt = [[],[]]
-
 	for j in range(60):
 		for i in range(2):
-		    for k in range(len(dep_dt_list[i])-1):
-			timestruct = localtime(float(dep_dt_list[i][k]))
-			if timestruct[6] < 5 and (
-			    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-			    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-			    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+		    r = requests.get(url)
+		    R = r.json()
+		    for x in range(len(R['travel_times'])):
+			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
+	dep_dt_list.sort()
+	time_bt = [[],[]]
+	time_bt_avg = []
+
+
+	for i in range(2):
+	    for k in range(len(dep_dt_list[i])-1):
+		timestruct = localtime(float(dep_dt_list[i][k]))
+		if timestruct[6] < 5 and (
+		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		
+
 	from_datetime = from_datetime + timedelta(days=6)
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
-	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
 	
+	for i in range(len(time_bt)):
+		if not time_bt[i]:
+			time_bt_avg.append('No weekdays in timeframe')
+		else:
+			avgtime = np.average(time_bt[i])			
+			time_bt_avg.append(str(int(avgtime/60))+' minutes and '+str(int(avgtime%60))+' seconds')
+
+
 	
 	# manipulate departure times to create plot of trains per time (one hour bin size)
 	bins_oneday = [int(from_datetime_epoch)+6*86400]
