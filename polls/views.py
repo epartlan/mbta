@@ -17,16 +17,21 @@ if os.name == 'posix' and "DISPLAY" not in os.environ:
 	matplotlib.use('agg')
 import matplotlib.pyplot as plt, mpld3
 
+
 def index(request):
 	to_datetime = datetime.today()
 	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
 
 	if request.method == 'POST':
 		timeframe = request.POST.get('timeframe', 'last_day')
-		if timeframe == 'last_day': outputs = last_day()
-		elif timeframe == 'last_week': outputs = last_week()
-		elif timeframe == 'last_month': outputs = last_month()
-		elif timeframe == 'last_year': outputs = last_year()
+# 		location = request.POST.get('location', 'downtown crossing')
+# 		direction = request.POST.get('direction', '0')
+		times = get_times(timeframe)
+# 		stops = get_stops(location, direction)
+		if timeframe == 'last_day': outputs = last_day(times)
+		elif timeframe == 'last_week': outputs = last_week(times)
+		elif timeframe == 'last_month': outputs = last_month(times)
+		elif timeframe == 'last_year': outputs = last_year(times)
 	else:
 		outputs = last_day()
 
@@ -45,42 +50,91 @@ def index(request):
 
 	return HttpResponse(template.render(context, request))
 
-	
-def last_day():
-	# define start and end time for the last day
-	to_datetime = datetime.today()
-	from_datetime = datetime.today()-timedelta(days=1)
-	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
-	from_datetime = datetime(from_datetime.year, from_datetime.month, from_datetime.day)
 
+def get_times(timeframe):
+	to_datetime = datetime.date(datetime.today())
+	
+	if timeframe == 'last_day':	
+		from_datetime = to_datetime - timedelta(days=1)
+	elif timeframe == 'last_week':
+		from_datetime = to_datetime - timedelta(days=7)
+	else:
+		from_datetime = to_datetime - timedelta(days=6)
+	
 	to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))
 	from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
+	
+	times = [from_datetime_epoch, to_datetime_epoch, from_datetime, to_datetime]
+	return times
 
-	# total trips for red line in both directions for one day
-	# outputs a count of trips, and 
+# def get_stops(location, direction):
+# 	if location == 'jfk/umass':
+# 	    if direction == 0:
+# 		red_line_stop = red_line_stops_0['jfk/umass A'] + red_line_stops_0['jfk/umass B']
+# 		to_stop = red_line_stops_0[to_stops_0['jfk/umass A'][0]] + red_line_stops_0[to_stops_0['jfk/umass B'][0]]
+# 	    elif direction == 1:
+# 		red_line_stop = red_line_stops_1['jfk/umass A'] + red_line_stops_1['jfk/umass B']
+# 		to_stop = red_line_stops_1[to_stops_1['jfk/umass A'][0]] + red_line_stops_1[to_stops_1['jfk/umass B'][0]]
+# 	elif direction == 0:
+# 	    red_line_stop = red_line_stops_0[location]
+# 	    to_stop = red_line_stops_0[to_stops_0[location][0]]
+# 	elif direction == 1:
+# 	    red_line_stop = red_line_stops_1[location]
+# 	    to_stop = red_line_stops_1[to_stops_1[location][0]]
+		
+# 	stops = [red_line_stop, to_stop]
+# 	return stops
+	
+	
+def last_day(times):
+	# get departure times for trains in the last day
+	to_datetime = times[3]
+	from_datetime = times[2]
+	to_datetime_epoch = times[1]
+	from_datetime_epoch = times[0]
 
-	from_stops = ['70061', '70094', '70061', '70105']
-	to_stops = ['70093', '70061', '70105', '70061']
-	dep_dt_list = []
+	# calculate total trains, total trains at rush hour, and time between trains at rush hour, per direction
+	# 0th item is in the direction 'from Alewife', 1st item is in the direction 'to Alewife'
+	from_stops = ['70075','70078']
+	to_stops = ['70077','70076']
+	
+	dep_dt_list = [[],[]]
 
-	for i in range(4):
-		url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-		r = requests.get(url)
-		R = r.json()
-		for x in range(len(R['travel_times'])):
-			dep_dt_list.append(int(R["travel_times"][x]['dep_dt']))
-	count = len(dep_dt_list)
+	for i in range(2):
+	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+	    r = requests.get(url)
+	    R = r.json()
+	    for x in range(len(R['travel_times'])):
+		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+
+	dep_dt_list.sort()
+	time_bt = [[],[]]
+
+	for i in range(2):
+	    for k in range(len(dep_dt_list[i])-1):
+		timestruct = localtime(float(dep_dt_list[i][k]))
+		if timestruct[6] < 5 and (
+		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+
+
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	rush_count = [len(time_bt[0]),len(time_bt[1])]
+	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
 
 	# manipulate departure times to create plot of trains per time (one hour bin size)
 	bins_oneday = [int(from_datetime_epoch)]
 	for i in range(24):
 		bins_oneday.append(bins_oneday[i]+3600)
+	
 		
 	# create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color='#0504aa', alpha=0.7, rwidth=0.85)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
 	plt.ylabel('Total Trips per hour')
 	plt.xlabel('Hour')
+	ax.legend(['From Alewife','To Alewife'])
 
 	ind = [0,3,6,9,12,15,18,21,24]
 	bins_label = []
@@ -90,34 +144,50 @@ def last_day():
 	plt.xticks(bins_label, ind)
 	g = mpld3.fig_to_html(fig)
 
-	outputs = [g, count, from_datetime]
+	outputs = [g, count, rush_count, time_bt_avg, from_datetime]
 	return outputs
 
 
 
 def last_week():
 
-	# define start and end time for the last week
-	to_datetime = datetime.today()
-	from_datetime = datetime.today()-timedelta(days=7)
-	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
-	from_datetime = datetime(from_datetime.year, from_datetime.month, from_datetime.day)
+	# get departure times for trains in the last day
+	to_datetime = times[3]
+	from_datetime = times[2]
+	to_datetime_epoch = times[1]
+	from_datetime_epoch = times[0]
 
-	to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))
-	from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
+	# calculate total trains, total trains at rush hour, and time between trains at rush hour, per direction
+	# 0th item is in the direction 'from Alewife', 1st item is in the direction 'to Alewife'
+	from_stops = ['70075','70078']
+	to_stops = ['70077','70076']
+	
+	dep_dt_list = [[],[]]
 
-	from_stops = ['70061', '70094', '70061', '70105']
-	to_stops = ['70093', '70061', '70105', '70061']
-	dep_dt_list = []
+	for i in range(2):
+	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+	    r = requests.get(url)
+	    R = r.json()
+	    for x in range(len(R['travel_times'])):
+		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 
-	for i in range(4):
-		url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-		r = requests.get(url)
-		R = r.json()
-		for x in range(len(R['travel_times'])):
-			dep_dt_list.append(int(R["travel_times"][x]['dep_dt']))
-	count = len(dep_dt_list)
+	dep_dt_list.sort()
+	time_bt = [[],[]]
 
+	for i in range(2):
+	    for k in range(len(dep_dt_list[i])-1):
+		timestruct = localtime(float(dep_dt_list[i][k]))
+		if timestruct[6] < 5 and (
+		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+
+
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	rush_count = [len(time_bt[0]),len(time_bt[1])]
+	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	
+	
 	# manipulate departure times to create plot of trains per time (one hour bin size)
 	bins_oneday = [int(from_datetime_epoch)]
 	for i in range(168):
@@ -125,7 +195,8 @@ def last_week():
 		
 	# create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color='#0504aa', alpha=0.7, rwidth=0.85)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per hour')
 	plt.xlabel('Day')
 	
@@ -137,40 +208,52 @@ def last_week():
 	plt.xticks(bins_label, ind)
 	g = mpld3.fig_to_html(fig)
 
-	outputs = [g, count, from_datetime]
-
-
+	outputs = [g, count, rush_count, time_bt_avg, from_datetime]
 	return outputs
 
 
 def last_month():
 
-	# define start and end time for the first iteration in the last month
-	to_datetime = datetime.today()
-	from_datetime = datetime.today()-timedelta(days=6)
-	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
-	from_datetime = datetime(from_datetime.year, from_datetime.month, from_datetime.day)
+	# get departure times for trains in the last day
+	to_datetime = times[3]
+	from_datetime = times[2]
+	to_datetime_epoch = times[1]
+	from_datetime_epoch = times[0]
+	
+	# calculate total trains, total trains at rush hour, and time between trains at rush hour, per direction
+	# 0th item is in the direction 'from Alewife', 1st item is in the direction 'to Alewife'
+	from_stops = ['70075','70078']
+	to_stops = ['70077','70076']
+	
+	dep_dt_list = [[],[]]
 
-	to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))
-	from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
+	for i in range(2):
+	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+	    r = requests.get(url)
+	    R = r.json()
+	    for x in range(len(R['travel_times'])):
+		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 
-	from_stops = ['70061', '70094', '70061', '70105']
-	to_stops = ['70093', '70061', '70105', '70061']
-	dep_dt_list = []
+	dep_dt_list.sort()
+	time_bt = [[],[]]
 
 	for j in range(5):
-		for i in range(4):
-			url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-			r = requests.get(url)
-			R = r.json()
-			for x in range(len(R['travel_times'])):
-				dep_dt_list.append(int(R["travel_times"][x]['dep_dt']))
+		for i in range(2):
+		    for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+			    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
 	from_datetime = from_datetime + timedelta(days=6)
-	count = len(dep_dt_list)
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	rush_count = [len(time_bt[0]),len(time_bt[1])]
+	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	
 
 	# manipulate departure times to create plot of trains per time (one day bin size)
 	bins_oneday = [int(from_datetime_epoch)+6*86400]
@@ -179,7 +262,8 @@ def last_month():
 		
 	# create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color='#0504aa', alpha=0.7, rwidth=0.85)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per day')
 	plt.xlabel('Day')
 
@@ -191,38 +275,52 @@ def last_month():
 	plt.xticks(bins_label, ind)
 	g = mpld3.fig_to_html(fig)
 
-	outputs = [g, count, from_datetime]
+	outputs = [g, count, rush_count, time_bt_avg, from_datetime]
 	return outputs
 
 
 def last_year():
-	# define start and end time for the first iteration in the last year
-	to_datetime = datetime.today()
-	from_datetime = datetime.today()-timedelta(days=6)
-	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
-	from_datetime = datetime(from_datetime.year, from_datetime.month, from_datetime.day)
-	
-	to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))
-	from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
+	# get departure times for trains in the last day
+	to_datetime = times[3]
+	from_datetime = times[2]
+	to_datetime_epoch = times[1]
+	from_datetime_epoch = times[0]
 
-	from_stops = ['70061', '70094', '70061', '70105']
-	to_stops = ['70093', '70061', '70105', '70061']
-	dep_dt_list = []
+	# calculate total trains, total trains at rush hour, and time between trains at rush hour, per direction
+	# 0th item is in the direction 'from Alewife', 1st item is in the direction 'to Alewife'
+	from_stops = ['70075','70078']
+	to_stops = ['70077','70076']
+	
+	dep_dt_list = [[],[]]
+
+	for i in range(2):
+	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+	    r = requests.get(url)
+	    R = r.json()
+	    for x in range(len(R['travel_times'])):
+		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+
+	dep_dt_list.sort()
+	time_bt = [[],[]]
 
 	for j in range(60):
-		for i in range(4):
-			url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-			r = requests.get(url)
-			R = r.json()
-			for x in range(len(R['travel_times'])):
-				dep_dt_list.append(int(R["travel_times"][x]['dep_dt']))
+		for i in range(2):
+		    for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			    (timestruct[3] >= 16 and timestruct[3] <= 19)):
+			    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
 	from_datetime = from_datetime + timedelta(days=6)
-	count = len(dep_dt_list)
-
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	rush_count = [len(time_bt[0]),len(time_bt[1])]
+	time_bt_avg = [np.average(time_bt[0])/60, np.average(time_bt[1])/60]
+	
+	
 	# manipulate departure times to create plot of trains per time (one hour bin size)
 	bins_oneday = [int(from_datetime_epoch)+6*86400]
 	for i in range(360):
@@ -230,7 +328,8 @@ def last_year():
 		
 	# create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color='#0504aa', alpha=0.7, rwidth=0.85)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per day')
 	plt.xlabel('Day')
 
@@ -242,5 +341,5 @@ def last_year():
 	plt.xticks(bins_label, ind)
 	g = mpld3.fig_to_html(fig)
 
-	outputs = [g, count, from_datetime]
+	outputs = [g, count, rush_count, time_bt_avg, from_datetime]
 	return outputs
