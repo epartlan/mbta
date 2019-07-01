@@ -44,10 +44,14 @@ def index(request):
 	context = {
 		'totaltrips': outputs[1],
 		'to_datetime': to_datetime,
-		'from_datetime': outputs[2],
+		'totalrush': outputs[2],
+		'time_bt': outputs[3],
+		'from_datetime': outputs[4],
 		'graph': [outputs[0]],
 	}
 
+	g, count, rush_count, time_bt_avg, from_datetime]
+	
 	return HttpResponse(template.render(context, request))
 
 
