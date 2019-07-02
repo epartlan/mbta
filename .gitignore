@@ -41,6 +41,7 @@ Include
 ######################
 mbtaenv
 
-# project folder #
-##################
+# project folders #
+###################
 mbta
+static/admin
