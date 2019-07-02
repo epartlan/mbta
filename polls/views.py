@@ -107,22 +107,22 @@ def last_day(times):
 	dep_dt_list = [[],[]]
 
 	for i in range(2):
-	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-	    r = requests.get(url)
-	    R = r.json()
-	    for x in range(len(R['travel_times'])):
-		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+		url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+		r = requests.get(url)
+		R = r.json()
+		for x in range(len(R['travel_times'])):
+			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 
 	dep_dt_list.sort()
 	time_bt = [[],[]]
 
 	for i in range(2):
-	    for k in range(len(dep_dt_list[i])-1):
-		timestruct = localtime(float(dep_dt_list[i][k]))
-		if timestruct[6] < 5 and (
-		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			(timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			(timestruct[3] >= 16 and timestruct[3] <= 19)):
+				time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 
 
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
@@ -178,22 +178,22 @@ def last_week(times):
 	dep_dt_list = [[],[]]
 
 	for i in range(2):
-	    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-	    r = requests.get(url)
-	    R = r.json()
-	    for x in range(len(R['travel_times'])):
-		dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+		url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+		r = requests.get(url)
+		R = r.json()
+		for x in range(len(R['travel_times'])):
+			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 
 	dep_dt_list.sort()
 	time_bt = [[],[]]
 
 	for i in range(2):
-	    for k in range(len(dep_dt_list[i])-1):
-		timestruct = localtime(float(dep_dt_list[i][k]))
-		if timestruct[6] < 5 and (
-		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			(timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			(timestruct[3] >= 16 and timestruct[3] <= 19)):
+				time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 
 
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
@@ -250,11 +250,11 @@ def last_month(times):
 
 	for j in range(5):
 		for i in range(2):
-		    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-		    r = requests.get(url)
-		    R = r.json()
-		    for x in range(len(R['travel_times'])):
-			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+			url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+			r = requests.get(url)
+			R = r.json()
+			for x in range(len(R['travel_times'])):
+				dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
@@ -265,12 +265,12 @@ def last_month(times):
 
 
 	for i in range(2):
-	    for k in range(len(dep_dt_list[i])-1):
-		timestruct = localtime(float(dep_dt_list[i][k]))
-		if timestruct[6] < 5 and (
-		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			(timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			(timestruct[3] >= 16 and timestruct[3] <= 19)):
+				time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 
 
 	from_datetime = from_datetime + timedelta(days=6)
@@ -326,11 +326,11 @@ def last_year(times):
 
 	for j in range(60):
 		for i in range(2):
-		    url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
-		    r = requests.get(url)
-		    R = r.json()
-		    for x in range(len(R['travel_times'])):
-			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+			url = 'http://realtime.mbta.com/developer/api/v2.1/traveltimes?api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' + from_stops[i] + '&to_stop=' + to_stops[i] + '&from_datetime=' + from_datetime_epoch + '&to_datetime=' + to_datetime_epoch
+			r = requests.get(url)
+			R = r.json()
+			for x in range(len(R['travel_times'])):
+				dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
@@ -341,12 +341,12 @@ def last_year(times):
 
 
 	for i in range(2):
-	    for k in range(len(dep_dt_list[i])-1):
-		timestruct = localtime(float(dep_dt_list[i][k]))
-		if timestruct[6] < 5 and (
-		    (timestruct[3] >= 7 and timestruct[3] <= 10) or 
-		    (timestruct[3] >= 16 and timestruct[3] <= 19)):
-		    time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
+		for k in range(len(dep_dt_list[i])-1):
+			timestruct = localtime(float(dep_dt_list[i][k]))
+			if timestruct[6] < 5 and (
+			(timestruct[3] >= 7 and timestruct[3] <= 10) or 
+			(timestruct[3] >= 16 and timestruct[3] <= 19)):
+				time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
 		
 
 	from_datetime = from_datetime + timedelta(days=6)
