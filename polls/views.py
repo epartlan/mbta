@@ -112,8 +112,8 @@ def last_day(times):
 		R = r.json()
 		for x in range(len(R['travel_times'])):
 			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+		dep_dt_list[i].sort()
 
-	dep_dt_list.sort()
 	time_bt = [[],[]]
 
 	for i in range(2):
@@ -183,8 +183,8 @@ def last_week(times):
 		R = r.json()
 		for x in range(len(R['travel_times'])):
 			dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+		dep_dt_list[i].sort()
 
-	dep_dt_list.sort()
 	time_bt = [[],[]]
 
 	for i in range(2):
@@ -255,14 +255,13 @@ def last_month(times):
 			R = r.json()
 			for x in range(len(R['travel_times'])):
 				dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+			dep_dt_list[i].sort()
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
-	dep_dt_list.sort()
 	time_bt = [[],[]]
 	time_bt_avg = []
-
 
 	for i in range(2):
 		for k in range(len(dep_dt_list[i])-1):
@@ -271,7 +270,6 @@ def last_month(times):
 			(timestruct[3] >= 7 and timestruct[3] <= 10) or 
 			(timestruct[3] >= 16 and timestruct[3] <= 19)):
 				time_bt[i].append(dep_dt_list[i][k+1]-dep_dt_list[i][k])
-
 
 	from_datetime = from_datetime + timedelta(days=6)
 	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
@@ -331,14 +329,13 @@ def last_year(times):
 			R = r.json()
 			for x in range(len(R['travel_times'])):
 				dep_dt_list[i].append(int(R["travel_times"][x]['dep_dt']))
+			dep_dt_list[i].sort()
 		to_datetime_epoch = from_datetime_epoch
 		from_datetime = from_datetime - timedelta(days=6)
 		from_datetime_epoch = str(int(mktime(from_datetime.timetuple())))
 
-	dep_dt_list.sort()
 	time_bt = [[],[]]
 	time_bt_avg = []
-
 
 	for i in range(2):
 		for k in range(len(dep_dt_list[i])-1):
