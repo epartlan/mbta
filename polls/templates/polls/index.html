@@ -1,55 +1,117 @@
-<center><h1>Riding the Red Line</h1><br/>
-	by Erin Partlan and Dhaval Parmar <br/><br/>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Riding the Red Line</title>
+	<!-- Files to make Bootstrap/Bootswatch work -->
+	<link href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/journal/bootstrap.min.css" rel="stylesheet" integrity="sha384-ciphE0NCAlD2/N6NUApXAN2dAs/vcSAOTzyE202jJx3oS8n4tAQezRgnlHqcJ59C" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<!-- End Bootstrap/Bootswatch -->
+</head>
+<body>
 
-Statistics for MBTA Red Line performance. <br/>
-Were yesterday's Red Line trains actually slower than usual?<br/>
-Compare yesterday's performance to historical averages. <br/> 
-Select a time period to view. <br/>
-(Please be patient when loading stats for one year!)<br/><br/><br/>
+	<div class="container">
 
-<form method="POST" class="post-form" action="">
-{% csrf_token %}
-<input type="radio" name="timeframe" value="last_day">Yesterday
-<input type="radio" name="timeframe" value="last_week">Last Week
-<input type="radio" name="timeframe" value="last_month">Last Month
-<input type="radio" name="timeframe" value="last_year">Last Year
-<br /><br />
-<button type="submit" class="save btn btn-default">Submit</button>
-</form>
+		<div class="row">
 
+			<div class="col">
 
-<br/>For the period {{ from_datetime }} to {{ to_datetime }} <br/><br/>
+				<div class="jumbotron jumbotron-fluid text-center pt-3 pb-3">
 
-<b>Trains from Alewife:</b>
-<br/>
-{% if totaltrips != '' %}
-Total trips: {{ totaltripsA }}<br />
-{% endif %}
-{% if totalrush != '' %}
-Total trips at rush hour (M-F 7-10am 4-7pm): {{ totalrushA }}<br />
-{% endif %}
-{% if time_bt != '' %}
-Time between trains at rush hour: {{ time_btA }}
-{% endif %}
-<br/>
-<br/>
-<b>Trains to Alewife:</b>
-<br/>
-{% if totaltrips != '' %}
-Total trips: {{ totaltripsB }}<br />
-{% endif %}
-{% if totalrush != '' %}
-Total trips at rush hour (M-F 7-10am 4-7pm): {{ totalrushB }}<br />
-{% endif %}
-{% if time_bt != '' %}
-Time between trains at rush hour: {{ time_btB }}
-{% endif %}
-<br/>
-<br/>
+					<h1 class="display-4">Riding the Red Line</h1>
+					<blockquote class="blockquote">
+						<footer class="blockquote-footer">by Erin Partlan and Dhaval Parmar</footer>
+					</blockquote>
 
-{% if graph != '' %}
-{% for elem in graph %}
-   {{elem|safe}}
-{% endfor %}
-{% endif %}
-</center>
+					<p class="lead">
+						Statistics for MBTA Red Line performance.
+						<hr class="my-4">
+						Were yesterday's Red Line trains actually slower than usual?<br />
+						Compare yesterday's performance to historical averages.
+					</p>
+
+				</div> <!-- end jumbotron -->
+
+			</div> <!-- end col -->
+
+		</div> <!-- end row -->
+
+		<div class="row text-center">
+
+			<div class="col align-self-center">
+
+				Select a time period to view.<br/>
+				(Please be patient when loading stats for one year!)
+
+				<!-- form to select timeframe for the plot -->
+				<form method="POST" class="post-form" action="">
+					{% csrf_token %}
+					<div class="btn-group btn-group-toggle mt-2" data-toggle="buttons">	
+						<label class="btn btn-outline-info {% if timeframe == 'last_day' %}active{% endif %}">
+							<input type="radio" name="timeframe" value="last_day" id="last_day" {% if timeframe == 'last_day' %}checked{% endif %}>Yesterday
+						</label>
+						<label class="btn btn-outline-info {% if timeframe == 'last_week' %}active{% endif %}">
+							<input type="radio" name="timeframe" value="last_week" id="last_week" {% if timeframe == 'last_week' %}checked{% endif %}>Last Week
+						</label>
+						<label class="btn btn-outline-info {% if timeframe == 'last_month' %}active{% endif %}">
+							<input type="radio" name="timeframe" value="last_month" id="last_month" {% if timeframe == 'last_month' %}checked{% endif %}>Last Month
+						</label>
+						<label class="btn btn-outline-info {% if timeframe == 'last_year' %}active{% endif %}">
+							<input type="radio" name="timeframe" value="last_year" id="last_year" {% if timeframe == 'last_year' %}checked{% endif %}>Last Year
+						</label>
+					</div> <!-- end btn-group -->
+
+					<br />
+					
+					<button class="btn btn-success m-2" type="submit" class="save btn btn-default">Submit</button>
+				</form>
+
+				<p>For the period <u>{{ from_datetime }}</u> to <u>{{ to_datetime }}.</u></p>
+
+				<p class="text-xl-left">
+					<b>Trains from Alewife:</b>
+					<br/>
+					{% if totaltrips != '' %}
+					Total trips: <u>{{ totaltripsA }}</u><br />
+					{% endif %}
+					{% if totalrush != '' %}
+					Total trips at rush hour (M-F 7-10am 4-7pm): <u>{{ totalrushA }}</u><br />
+					{% endif %}
+					{% if time_bt != '' %}
+					Time between trains at rush hour: <u>{{ time_btA }}</u>
+					{% endif %}
+				</p>
+
+				<p class="text-xl-left">
+					<b>Trains to Alewife:</b>
+					<br/>
+					{% if totaltrips != '' %}
+					Total trips: <u>{{ totaltripsB }}</u><br />
+					{% endif %}
+					{% if totalrush != '' %}
+					Total trips at rush hour (M-F 7-10am 4-7pm): <u>{{ totalrushB }}</u><br />
+					{% endif %}
+					{% if time_bt != '' %}
+					Time between trains at rush hour: <u>{{ time_btB }}</u>
+					{% endif %}
+				</p>
+
+			</div> <!-- end col -->
+
+			<div class="col align-self-center">
+
+				{% if graph != '' %}
+				{% for elem in graph %}
+				{{elem|safe}}
+				{% endfor %}
+				{% endif %}
+
+			</div> <!-- end col -->
+
+		</div> <!-- end row -->
+
+	</div> <!-- end container -->
+
+</body>
+</html>
