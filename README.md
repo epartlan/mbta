@@ -9,7 +9,7 @@ Current functionality for trip data on the Red Line comparing data over the last
 
 # Output Example
 The screenshot below shows the number of trains per day over the last month. The dip at day 17 reflects the impact of the car derailment on the 11th. A week later, the Red Line was still not running at the capacity before derailment.
-![image](https://user-images.githubusercontent.com/52188112/60107537-143b4400-9735-11e9-8de2-831c112dec12.png)
+![image](https://user-images.githubusercontent.com/52188112/60763216-bca6ad80-a03d-11e9-9755-8f1142089066.png)
 
 # Code Example
   #define start and end time for the last day
