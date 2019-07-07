@@ -52,8 +52,7 @@ class Command(BaseCommand):
 
 			if from_datetime_epoch == last_day_epoch:
 				to_datetime = from_datetime + timedelta(days=1)
-				to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))
-				tt = TravelTimes.objects.order_by('-from_datetime')[0]
+				to_datetime_epoch = str(int(mktime(to_datetime.timetuple())))				
 				for j in range(2):
 					url = ('http://realtime.mbta.com/developer/api/v2.1/traveltimes?' +
 					'api_key=wX9NwuHnZU2ToO7GmGR9uw&format=json&from_stop=' +
@@ -63,6 +62,7 @@ class Command(BaseCommand):
 					r = requests.get(url)
 					R = r.json()
 					print("Updating data for date: " + str(from_datetime))
+					tt = TravelTimes.objects.order_by('-from_datetime').filter(direction=j)[0]
 					DepartureDates.objects.filter(travel_time=tt).delete()
 					for x in range(len(R['travel_times'])):
 						dd = DepartureDates.objects.create(departure_date=R['travel_times'][x]['dep_dt'], travel_time=tt)
