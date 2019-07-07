@@ -8,7 +8,7 @@ On June 11, 2019, the MBTA Red Line derailed resulting in infrastructure damage 
 Current functionality for trip data on the Red Line comparing data over the last day, week, month, and year. Anticipated future functionality to cover other subway and bus routes, ability to select individual stops, and option to input custom time ranges.
 
 # Output Example
-The screenshot below shows the number of trains per day over the last month. The dip at day 17 reflects the impact of the car derailment on the 11th. A week later, the Red Line was still not running at the capacity before derailment.
+The screenshot below shows the number of trains per day over the last month. The dip at day 6 reflects the impact of the car derailment on the 11th. Two weeks later, the Red Line was still not running at the capacity before derailment.
 ![image](https://user-images.githubusercontent.com/52188112/60763216-bca6ad80-a03d-11e9-9755-8f1142089066.png)
 
 # Code Example
