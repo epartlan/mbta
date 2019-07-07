@@ -99,7 +99,7 @@ def last_day():
 	
 	# Create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#336699','#22b24c'], alpha=0.7, rwidth=0.85, stacked=True)
 	plt.ylabel('Total Trips per hour')
 	plt.xlabel('Hour')
 	ax.legend(['From Alewife','To Alewife'])
@@ -166,7 +166,7 @@ def last_week():
 		
 	# Create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#336699','#22b24c'], alpha=0.7, rwidth=0.85, stacked=True)
 	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per hour')
 	plt.xlabel('Day')
@@ -234,7 +234,7 @@ def last_month():
 		
 	# Create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#336699','#22b24c'], alpha=0.7, rwidth=0.85, stacked=True)
 	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per day')
 	plt.xlabel('Day')
@@ -301,7 +301,7 @@ def last_year():
 
 	# Create output plot	
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#336699','#22b24c'], alpha=0.7, rwidth=0.85, stacked=True)
 	ax.legend(['From Alewife','To Alewife'])
 	plt.ylabel('Total Trips per day')
 	plt.xlabel('Day')
