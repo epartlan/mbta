@@ -22,6 +22,7 @@ from polls.models import TravelTimes, DepartureDates
 def index(request):
 	to_datetime = datetime.today()
 	to_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day)
+	timeframe = 'last_day'
 
 	if request.method == 'POST':
 		timeframe = request.POST.get('timeframe', 'last_day')
@@ -43,6 +44,7 @@ def index(request):
 		'time_btB': outputs[3][1],
 		'from_datetime': outputs[4],
 		'to_datetime': outputs[5],
+		'timeframe': timeframe,
 	}
 	
 	return HttpResponse(template.render(context, request))
