@@ -399,7 +399,7 @@ def custom_range(dpfrom, dpto):
 
 	# create output plot
 	fig, ax = plt.subplots()
-	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
+	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#336699','#22b24c'], alpha=0.7, rwidth=0.85, stacked=True)
 	plt.ylabel('Total Trips per Day')
 	plt.xlabel('Day')
 	ax.legend(['From Alewife','To Alewife'])
