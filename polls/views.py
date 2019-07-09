@@ -26,13 +26,13 @@ def index(request):
 
 	if request.method == 'POST':
 		timeframe = request.POST.get('timeframe', 'last_day')
-		dpfrom = request.POST.get('datepicker_from', 'no date')
-		dpto = request.POST.get('datepicker_to', 'no date')
+		dpfrom = request.POST.get('datepicker_from')
+		dpto = request.POST.get('datepicker_to')
 		if timeframe == 'last_day': outputs = last_day()
 		elif timeframe == 'last_week': outputs = last_week()
 		elif timeframe == 'last_month': outputs = last_month()
 		elif timeframe == 'last_year': outputs = last_year()
-		elif timeframe == 'custom_range' and dpfrom != 'no date' and dpto != 'no date': outputs = custom_range(dpfrom, dpto)
+		elif timeframe == 'custom_range' and dpfrom and dpto and dpfrom != dpto: outputs = custom_range(dpfrom, dpto)
 		else:
 			outputs = last_day()
 			timeframe = 'last_day'
@@ -86,7 +86,7 @@ def last_day():
 				time_bt[i].append(float(dep_dt_list[i][k+1])-float(dep_dt_list[i][k]))
 
 	# Calculate number of trains in total and during rush hour
-	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
 	
 	# Calculate average time between trains during rush hour
@@ -155,7 +155,7 @@ def last_week():
 				time_bt[i].append(float(dep_dt_list[i][k+1])-float(dep_dt_list[i][k]))
 
 	# Calculate number of trains in total and during rush hour
-	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
 	
 	# Calculate average time between trains during rush hour
@@ -229,7 +229,7 @@ def last_month():
 				time_bt[i].append(float(dep_dt_list[i][k+1])-float(dep_dt_list[i][k]))
 
 	# Calculate number of trains in total and during rush hour
-	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
 	
 	# Calculate average time between trains during rush hour
@@ -305,7 +305,7 @@ def last_year():
 				time_bt[i].append(float(dep_dt_list[i][k+1])-float(dep_dt_list[i][k]))
 
 	# Calculate number of trains in total and during rush hour
-	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                               
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]
 	rush_count = [len(time_bt[0]),len(time_bt[1])]
 	
 	# Calculate average time between trains during rush hour
@@ -387,9 +387,9 @@ def custom_range(dpfrom, dpto):
 			avgtime = np.average(time_bt[i])
 			time_bt_avg.append(str(int(avgtime/60))+' minutes and '+str(int(avgtime%60))+' seconds')
 
-	# outputs                                 
-	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]                            # the total number of trips in [dir0,dir1]   
-	rush_count = [len(time_bt[0]),len(time_bt[1])]                               # total number of trips at rush hour in [dir0,dir1]       
+	# outputs
+	count = [len(dep_dt_list[0]),len(dep_dt_list[1])]	# the total number of trips in [dir0,dir1]
+	rush_count = [len(time_bt[0]),len(time_bt[1])]		# total number of trips at rush hour in [dir0,dir1]
 
 
 	# manipulate departure times to create plot of trains per time for one week (one hour bin size)
@@ -397,7 +397,7 @@ def custom_range(dpfrom, dpto):
 	for i in range(time_range.days):
 		bins_oneday.append(bins_oneday[i]+86400)
 
-	# create output plot    
+	# create output plot
 	fig, ax = plt.subplots()
 	plt.hist(x=dep_dt_list, bins=bins_oneday, color=['#931621','#2c8c99'], alpha=0.7, rwidth=0.85, stacked=True)
 	plt.ylabel('Total Trips per Day')
@@ -405,16 +405,25 @@ def custom_range(dpfrom, dpto):
 	ax.legend(['From Alewife','To Alewife'])
 
 	ind = []
-	space = int(time_range.days/5)
-	for j in range(5+1):
-		date_label = from_datetime + timedelta(days=(j*space))
-		ind.append(date_label.strftime('%Y-%m-%d'))
-
-	    
 	bins_label = [bins_oneday[0]]
-	for i in range(5):
-		bins_label.append(bins_oneday[(i+1)*space])
 
+	space = int(time_range.days)
+	if space < 5:
+		for j in range(space+1):
+			date_label = from_datetime + timedelta(days=(j))
+			ind.append(date_label.strftime('%Y-%m-%d'))
+
+		for i in range(space):
+			bins_label.append(bins_oneday[(i+1)])
+	else:
+		space = int(time_range.days/5)
+
+		for j in range(5+1):
+			date_label = from_datetime + timedelta(days=(j*space))
+			ind.append(date_label.strftime('%Y-%m-%d'))
+
+		for i in range(5):
+			bins_label.append(bins_oneday[(i+1)*space])
 
 	plt.xticks(bins_label, ind)
 	plt.xticks(rotation=90)
@@ -425,5 +434,3 @@ def custom_range(dpfrom, dpto):
 
 	outputs = [g, count, rush_count, time_bt_avg, from_datetime, to_datetime]
 	return outputs
-
-
