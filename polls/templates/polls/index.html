@@ -76,7 +76,6 @@
 							<input type="radio" name="timeframe" value="custom_range" id="custom_range" {% if timeframe == 'custom_range' %}checked{% endif %}>Custom Range
 						</label>
 					</div> <!-- end btn-group -->
-
 					<br />
 					<br />
 					<label for="datepicker_from" class="text-info text-left small"><b>From:</b> {% if not dpfrom %}<i class="text-muted">(Please select a date.)</i>{% endif %}
@@ -99,6 +98,7 @@
 							size: 'small'
 						});
 					</script>
+					<br />
 					<button class="btn btn-success m-2" type="submit" class="save btn btn-default">Submit</button>
 				</form>
 
