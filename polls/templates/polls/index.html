@@ -10,6 +10,9 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 	<!-- End Bootstrap/Bootswatch -->
 
+	<link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css">
+	<script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+
 	<style type="text/css">
 		.page-footer {			
 			background:#eee;
@@ -55,21 +58,49 @@
 				<form method="POST" class="post-form" action="">
 					{% csrf_token %}
 					<div class="btn-group btn-group-toggle mt-2" data-toggle="buttons">	
-						<label class="btn btn-outline-info {% if timeframe == 'last_day' %}active{% endif %}">
+						<label class="btn btn-sm btn-outline-info {% if timeframe == 'last_day' %}active{% endif %}">
 							<input type="radio" name="timeframe" value="last_day" id="last_day" {% if timeframe == 'last_day' %}checked{% endif %}>Yesterday
 						</label>
-						<label class="btn btn-outline-info {% if timeframe == 'last_week' %}active{% endif %}">
+						<label class="btn btn-sm btn-outline-info {% if timeframe == 'last_week' %}active{% endif %}">
 							<input type="radio" name="timeframe" value="last_week" id="last_week" {% if timeframe == 'last_week' %}checked{% endif %}>Last Week
 						</label>
-						<label class="btn btn-outline-info {% if timeframe == 'last_month' %}active{% endif %}">
+						<label class="btn btn-sm btn-outline-info {% if timeframe == 'last_month' %}active{% endif %}">
 							<input type="radio" name="timeframe" value="last_month" id="last_month" {% if timeframe == 'last_month' %}checked{% endif %}>Last Month
 						</label>
-						<label class="btn btn-outline-info {% if timeframe == 'last_year' %}active{% endif %}">
+						<label class="btn btn-sm btn-outline-info {% if timeframe == 'last_year' %}active{% endif %}">
 							<input type="radio" name="timeframe" value="last_year" id="last_year" {% if timeframe == 'last_year' %}checked{% endif %}>Last Year
+						</label>
+						<label class="btn btn-sm btn-outline-info {% if timeframe == 'custom_range' %}active{% endif %}">
+							<input type="radio" name="timeframe" value="custom_range" id="custom_range" {% if timeframe == 'custom_range' %}checked{% endif %}>Custom Range
 						</label>
 					</div> <!-- end btn-group -->
 
 					<br />
+					<br/>
+				<div class='align-self-center'>
+					<div class="form-group row">
+					<label for="datepicker_from" class="col-sm-2 col-form-label text-info">From</label>
+					<input id="datepicker_from" name="datepicker_from" />
+					<script>
+						$('#datepicker_from').datepicker({
+							uiLibrary: 'bootstrap4',
+							width: 160
+						});
+					</script>
+					{% if dpfrom == 'no date' %}Please select a date.{% endif %}
+					</div>
+					<div class="form-group row">
+					<label for="datepicker_to" class="col-sm-2 col-form-label text-info">To</label>
+					<input id="datepicker_to" name="datepicker_to" />
+					<script>
+						$('#datepicker_to').datepicker({
+							uiLibrary: 'bootstrap4',
+							width: 160
+						});
+					</script>
+					{% if dpto == 'no date' %}Please select a date.{% endif %}
+					</div>
+				</div>
 					
 					<button class="btn btn-success m-2" type="submit" class="save btn btn-default">Submit</button>
 				</form>
