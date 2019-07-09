@@ -33,6 +33,9 @@ def index(request):
 		elif timeframe == 'last_month': outputs = last_month()
 		elif timeframe == 'last_year': outputs = last_year()
 		elif timeframe == 'custom_range' and dpfrom != 'no date' and dpto != 'no date': outputs = custom_range(dpfrom, dpto)
+		else:
+			outputs = last_day()
+			timeframe = 'last_day'
 	else:
 		outputs = last_day()
 
